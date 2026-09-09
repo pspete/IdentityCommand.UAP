@@ -11,7 +11,7 @@ function Set-UAPPolicy {
         [String]$policyId,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ValueFromPipelinebyPropertyName = $true
         )]
         [ValidateLength(1, 200)]
@@ -25,14 +25,14 @@ function Set-UAPPolicy {
         [String]$description,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ValueFromPipelinebyPropertyName = $true
         )]
         [ValidateSet('Cloud Console', 'VM', 'DB', 'Clusters', 'Groups')]
         [String]$targetCategory,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ValueFromPipelinebyPropertyName = $true
         )]
         [ValidateSet('AWS', 'Azure', 'GCP', 'FQDN/IP')]
@@ -79,7 +79,7 @@ function Set-UAPPolicy {
         [String]$status,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ValueFromPipelinebyPropertyName = $true
         )]
         [ValidateNotNullOrEmpty()]
@@ -93,7 +93,7 @@ function Set-UAPPolicy {
         [psobject]$conditions,
 
         [parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ValueFromPipelinebyPropertyName = $true
         )]
         [ValidateNotNullOrEmpty()]
@@ -120,45 +120,87 @@ function Set-UAPPolicy {
 
         $URI = "$($ISPSSSession.tenant_url)/api/policies/$policyId"
 
-        $Metadata = [ordered]@{ name = $name }
+        #The service replaces the policy with the payload sent, so the current policy provides
+        #whatever the caller did not supply. Its read-only properties are dropped rather than echoed.
+        $Existing = Get-UAPPolicy -policyId $policyId | Remove-UAPReadOnlyProperty
 
-        if ($PSBoundParameters.ContainsKey('description')) { $Metadata['description'] = $description }
-        if ($PSBoundParameters.ContainsKey('status')) { $Metadata['status'] = @{ status = $status } }
-        if ($PSBoundParameters.ContainsKey('policyTags')) { $Metadata['policyTags'] = @($policyTags) }
+        if ($null -eq $Existing) {
+            throw "Policy '$policyId' was not found, so there is no policy to update"
+        }
 
-        if ($PSBoundParameters.ContainsKey('fromTime') -or $PSBoundParameters.ContainsKey('toTime')) {
+        $boundParameters = $PSBoundParameters | Get-Parameter -ParametersToRemove policyId
 
-            $TimeFrame = [ordered]@{ }
+        #Metadata: the flat properties merge directly against the current policy's metadata
+        $Metadata = Merge-Parameter -Template ([ordered]@{
+                policyId   = $policyId
+                name       = $null
+                description = $null
+                policyTags = $null
+                timeZone   = $null
+            }) -BoundParameter $boundParameters -Fallback $Existing.metadata
 
-            #The service documents the timeframe as yyyy-MM-ddTHH:mm:ss
-            if ($PSBoundParameters.ContainsKey('fromTime')) { $TimeFrame['fromTime'] = $fromTime.ToString('yyyy-MM-ddTHH:mm:ss') }
-            if ($PSBoundParameters.ContainsKey('toTime')) { $TimeFrame['toTime'] = $toTime.ToString('yyyy-MM-ddTHH:mm:ss') }
+        $Metadata['policyId'] = $policyId
 
+        #Status travels as an object, and only its status value is writable
+        $CurrentStatus = if ($PSBoundParameters.ContainsKey('status')) { $status } else { $Existing.metadata.status.status }
+        if (-not [string]::IsNullOrEmpty($CurrentStatus)) {
+            $Metadata['status'] = [ordered]@{ status = $CurrentStatus }
+        }
+
+        #The timeframe is a nested object, so each end falls back to the current policy's own value
+        $TimeFrame = [ordered]@{ }
+
+        foreach ($Bound in @{ Name = 'fromTime'; Value = $fromTime }, @{ Name = 'toTime'; Value = $toTime }) {
+
+            if ($PSBoundParameters.ContainsKey($Bound.Name)) {
+                #The service documents the timeframe as yyyy-MM-ddTHH:mm:ss
+                $TimeFrame[$Bound.Name] = $Bound.Value.ToString('yyyy-MM-ddTHH:mm:ss')
+            } elseif ($null -ne $Existing.metadata.timeFrame.$($Bound.Name)) {
+                $TimeFrame[$Bound.Name] = $Existing.metadata.timeFrame.$($Bound.Name)
+            }
+
+        }
+
+        if ($TimeFrame.Count -gt 0) {
             $Metadata['timeFrame'] = $TimeFrame
-
         }
 
-        if ($PSBoundParameters.ContainsKey('timeZone')) { $Metadata['timeZone'] = $timeZone }
+        $Metadata['policyEntitlement'] = Merge-Parameter -Template ([ordered]@{
+                targetCategory = $null
+                locationType   = $null
+                policyType     = $null
+            }) -BoundParameter $boundParameters -Fallback $Existing.metadata.policyEntitlement
 
-        $Entitlement = [ordered]@{ targetCategory = $targetCategory; locationType = $locationType }
-        if ($PSBoundParameters.ContainsKey('policyType')) { $Entitlement['policyType'] = $policyType }
+        #Top level properties merge against the policy itself
+        $Policy = Merge-Parameter -Template ([ordered]@{
+                principals       = $null
+                conditions       = $null
+                behavior         = $null
+                connectionMethod = $null
+            }) -BoundParameter $boundParameters -Fallback $Existing
 
-        $Metadata['policyEntitlement'] = $Entitlement
+        $Policy.Insert(0, 'metadata', $Metadata)
 
-        $Policy = [ordered]@{
-            metadata   = $Metadata
-            principals = @($principals)
-            targets    = $(Resolve-UAPTargetShape -targetCategory $targetCategory -targets $targets)
+        #Targets retrieved from the service are already in their final shape; targets supplied by the
+        #caller come from a builder and are shaped here
+        $Category = $Metadata['policyEntitlement']['targetCategory']
+        $PolicyTargets = if ($PSBoundParameters.ContainsKey('targets')) { $targets } else { $Existing.targets }
+
+        $Policy['targets'] = Resolve-UAPTargetShape -targetCategory $Category -targets $PolicyTargets
+
+        #Drop anything neither supplied nor held by the current policy
+        foreach ($Key in @($Policy.Keys)) {
+            if ($null -eq $Policy[$Key]) {
+                $Policy.Remove($Key)
+            }
         }
 
-        if ($PSBoundParameters.ContainsKey('conditions')) { $Policy['conditions'] = $conditions }
-        if ($PSBoundParameters.ContainsKey('behavior')) { $Policy['behavior'] = $behavior }
-        if ($PSBoundParameters.ContainsKey('connectionMethod')) { $Policy['connectionMethod'] = $connectionMethod }
+        foreach ($Key in @($Metadata.Keys)) {
+            if ($null -eq $Metadata[$Key]) {
+                $Metadata.Remove($Key)
+            }
+        }
 
-        $body = $Policy | ConvertTo-Json -Depth 12
-
-        #The policy id travels in the path and in the metadata of the body
-        $Policy['metadata']['policyId'] = $policyId
         $body = $Policy | ConvertTo-Json -Depth 12
 
         if ($PSCmdlet.ShouldProcess($policyId, 'Update Access Policy')) {

@@ -3407,7 +3407,9 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
     </command:details>
     <maml:description>
       <maml:para>Updates an access policy.</maml:para>
-      <maml:para>The service replaces the policy with the payload sent, so this is not a partial update - supply the policy in full, including the parts which are not changing. Fetch the current policy with `Get-UAPPolicy -policyId` first to see what it holds.</maml:para>
+      <maml:para>The service replaces the policy with the payload sent, so this command retrieves the current policy first and uses it for whatever you do not supply - supply only what is changing.</maml:para>
+      <maml:para>The read-only properties the service adds to a retrieved policy are dropped rather than echoed back: who created and last updated it, the status code and description behind its status, the display names it resolved for each target, its delegation classification, and the invalid resources behind an error status.</maml:para>
+      <maml:para>Because omitted values fall back to the current policy, a value cannot be cleared by omitting it.</maml:para>
       <maml:para>Suspending or reactivating a policy is done here, with `-status`.</maml:para>
     </maml:description>
     <command:syntax>
@@ -3425,10 +3427,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>name</maml:name>
           <maml:description>
-            <maml:para>A unique name for the policy.</maml:para>
+            <maml:para>A new name for the policy. The current name is kept when not supplied.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -3449,10 +3451,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>targetCategory</maml:name>
           <maml:description>
-            <maml:para>The category of target the policy grants access to.</maml:para>
+            <maml:para>The category of target the policy grants access to. The current category is kept when not supplied.</maml:para>
           </maml:description>
           <command:parameterValueGroup>
             <command:parameterValue required="false" command:variableLength="false">Cloud Console</command:parameterValue>
@@ -3468,10 +3470,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>locationType</maml:name>
           <maml:description>
-            <maml:para>The location of the target.</maml:para>
+            <maml:para>The location of the target. The current location is kept when not supplied.</maml:para>
           </maml:description>
           <command:parameterValueGroup>
             <command:parameterValue required="false" command:variableLength="false">AWS</command:parameterValue>
@@ -3566,10 +3568,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>principals</maml:name>
           <maml:description>
-            <maml:para>The identities the policy applies to, from `New-UAPPrincipalDefinition`.</maml:para>
+            <maml:para>The identities the policy applies to, from `New-UAPPrincipalDefinition`. The current identities are kept when not supplied.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSObject[]</command:parameterValue>
           <dev:type>
@@ -3590,10 +3592,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>targets</maml:name>
           <maml:description>
-            <maml:para>The targets the policy grants access to, from the `New-UAP*TargetDefinition` builder matching the target category.</maml:para>
+            <maml:para>The targets the policy grants access to, from the `New-UAP*TargetDefinition` builder matching the target category. The current targets are kept when not supplied.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
           <dev:type>
@@ -3667,10 +3669,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
         <maml:name>name</maml:name>
         <maml:description>
-          <maml:para>A unique name for the policy.</maml:para>
+          <maml:para>A new name for the policy. The current name is kept when not supplied.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3691,10 +3693,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
         <maml:name>targetCategory</maml:name>
         <maml:description>
-          <maml:para>The category of target the policy grants access to.</maml:para>
+          <maml:para>The category of target the policy grants access to. The current category is kept when not supplied.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3703,10 +3705,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
         <maml:name>locationType</maml:name>
         <maml:description>
-          <maml:para>The location of the target.</maml:para>
+          <maml:para>The location of the target. The current location is kept when not supplied.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3787,10 +3789,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
         <maml:name>principals</maml:name>
         <maml:description>
-          <maml:para>The identities the policy applies to, from `New-UAPPrincipalDefinition`.</maml:para>
+          <maml:para>The identities the policy applies to, from `New-UAPPrincipalDefinition`. The current identities are kept when not supplied.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSObject[]</command:parameterValue>
         <dev:type>
@@ -3811,10 +3813,10 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
         <maml:name>targets</maml:name>
         <maml:description>
-          <maml:para>The targets the policy grants access to, from the `New-UAP*TargetDefinition` builder matching the target category.</maml:para>
+          <maml:para>The targets the policy grants access to, from the `New-UAP*TargetDefinition` builder matching the target category. The current targets are kept when not supplied.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
         <dev:type>
@@ -3882,22 +3884,40 @@ $Targets = New-UAPVirtualMachineTargetDefinition -Azure -subscriptions $Subscrip
     <command:examples>
       <command:example>
         <maml:title>-------------------------- Example 1 --------------------------</maml:title>
-        <dev:code>Set-UAPPolicy -policyId aws_d880e53b-151e-414b-8f07-9ea55888abc3 -name 'AWS read access' `
-    -targetCategory 'Cloud Console' -locationType AWS -status Suspended `
-    -principals $Principals -conditions $Conditions -targets $Targets</dev:code>
+        <dev:code>Set-UAPPolicy -policyId aws_d880e53b-151e-414b-8f07-9ea55888abc3 -status Suspended</dev:code>
         <dev:remarks>
-          <maml:para>Suspends a policy, supplying its configuration in full</maml:para>
+          <maml:para>Suspends a policy, leaving the rest of its configuration as it is</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- Example 2 --------------------------</maml:title>
+        <dev:code>Set-UAPPolicy -policyId $policyId -name 'AWS read access' -description 'Read only access for the platform team'</dev:code>
+        <dev:remarks>
+          <maml:para>Renames a policy and updates its description</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 3 --------------------------</maml:title>
         <dev:code>$Targets = New-UAPCloudConsoleTargetDefinition -roleId $FirstRole -workspaceId $Workspace
 $Targets = New-UAPCloudConsoleTargetDefinition -roleId $SecondRole -workspaceId $Workspace -TargetDefinition $Targets
 
-Set-UAPPolicy -policyId $policyId -name 'AWS read access' -targetCategory 'Cloud Console' -locationType AWS `
-    -principals $Principals -conditions $Conditions -targets $Targets</dev:code>
+Set-UAPPolicy -policyId $policyId -targets $Targets</dev:code>
         <dev:remarks>
-          <maml:para>Adds a second role to a cloud console policy</maml:para>
+          <maml:para>Replaces the targets of a policy, leaving everything else as it is</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 4 --------------------------</maml:title>
+        <dev:code>Get-UAPPolicy -status Active -targetCategory VM | Set-UAPPolicy -status Suspended</dev:code>
+        <dev:remarks>
+          <maml:para>Suspends every active VM policy</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- Example 5 --------------------------</maml:title>
+        <dev:code>Set-UAPPolicy -policyId $policyId -conditions (New-UAPConditionDefinition -maxSessionDuration 4 -idleTime 15)</dev:code>
+        <dev:remarks>
+          <maml:para>Extends the maximum session duration and idle timeout</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

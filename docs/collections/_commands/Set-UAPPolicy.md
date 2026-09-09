@@ -13,19 +13,25 @@ Updates an access policy
 ## SYNTAX
 
 ```
-Set-UAPPolicy -policyId <String> -name <String> [-description <String>] -targetCategory <String>
- -locationType <String> [-policyType <String>] [-policyTags <String[]>] [-timeZone <String>]
- [-fromTime <DateTime>] [-toTime <DateTime>] [-status <String>] -principals <PSObject[]>
- [-conditions <PSObject>] -targets <PSObject> [-behavior <PSObject>] [-connectionMethod <String>]
+Set-UAPPolicy -policyId <String> [-name <String>] [-description <String>] [-targetCategory <String>]
+ [-locationType <String>] [-policyType <String>] [-policyTags <String[]>] [-timeZone <String>]
+ [-fromTime <DateTime>] [-toTime <DateTime>] [-status <String>] [-principals <PSObject[]>]
+ [-conditions <PSObject>] [-targets <PSObject>] [-behavior <PSObject>] [-connectionMethod <String>]
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 Updates an access policy.
 
-The service replaces the policy with the payload sent, so this is **not** a partial update - supply
-the policy in full, including the parts which are not changing. Fetch the current policy with
-`Get-UAPPolicy -policyId` first to see what it holds.
+The service replaces the policy with the payload sent, so this command retrieves the current policy
+first and uses it for whatever you do not supply - supply only what is changing.
+
+The read-only properties the service adds to a retrieved policy are dropped rather than echoed back:
+who created and last updated it, the status code and description behind its status, the display names
+it resolved for each target, its delegation classification, and the invalid resources behind an error
+status.
+
+Because omitted values fall back to the current policy, a value cannot be cleared by omitting it.
 
 Suspending or reactivating a policy is done here, with `-status`.
 
@@ -33,23 +39,41 @@ Suspending or reactivating a policy is done here, with `-status`.
 
 ### Example 1
 ```
-Set-UAPPolicy -policyId aws_d880e53b-151e-414b-8f07-9ea55888abc3 -name 'AWS read access' `
-    -targetCategory 'Cloud Console' -locationType AWS -status Suspended `
-    -principals $Principals -conditions $Conditions -targets $Targets
+Set-UAPPolicy -policyId aws_d880e53b-151e-414b-8f07-9ea55888abc3 -status Suspended
 ```
 
-Suspends a policy, supplying its configuration in full
+Suspends a policy, leaving the rest of its configuration as it is
 
 ### Example 2
+```
+Set-UAPPolicy -policyId $policyId -name 'AWS read access' -description 'Read only access for the platform team'
+```
+
+Renames a policy and updates its description
+
+### Example 3
 ```
 $Targets = New-UAPCloudConsoleTargetDefinition -roleId $FirstRole -workspaceId $Workspace
 $Targets = New-UAPCloudConsoleTargetDefinition -roleId $SecondRole -workspaceId $Workspace -TargetDefinition $Targets
 
-Set-UAPPolicy -policyId $policyId -name 'AWS read access' -targetCategory 'Cloud Console' -locationType AWS `
-    -principals $Principals -conditions $Conditions -targets $Targets
+Set-UAPPolicy -policyId $policyId -targets $Targets
 ```
 
-Adds a second role to a cloud console policy
+Replaces the targets of a policy, leaving everything else as it is
+
+### Example 4
+```
+Get-UAPPolicy -status Active -targetCategory VM | Set-UAPPolicy -status Suspended
+```
+
+Suspends every active VM policy
+
+### Example 5
+```
+Set-UAPPolicy -policyId $policyId -conditions (New-UAPConditionDefinition -maxSessionDuration 4 -idleTime 15)
+```
+
+Extends the maximum session duration and idle timeout
 
 ## PARAMETERS
 
@@ -69,14 +93,14 @@ Accept wildcard characters: False
 ```
 
 ### -name
-A unique name for the policy.
+A new name for the policy. The current name is kept when not supplied.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
@@ -99,7 +123,7 @@ Accept wildcard characters: False
 ```
 
 ### -targetCategory
-The category of target the policy grants access to.
+The category of target the policy grants access to. The current category is kept when not supplied.
 
 ```yaml
 Type: String
@@ -107,7 +131,7 @@ Parameter Sets: (All)
 Aliases: 
 Accepted values: Cloud Console, VM, DB, Clusters, Groups
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
@@ -115,7 +139,7 @@ Accept wildcard characters: False
 ```
 
 ### -locationType
-The location of the target.
+The location of the target. The current location is kept when not supplied.
 
 ```yaml
 Type: String
@@ -123,7 +147,7 @@ Parameter Sets: (All)
 Aliases: 
 Accepted values: AWS, Azure, GCP, FQDN/IP
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
@@ -223,14 +247,14 @@ Accept wildcard characters: False
 ```
 
 ### -principals
-The identities the policy applies to, from `New-UAPPrincipalDefinition`.
+The identities the policy applies to, from `New-UAPPrincipalDefinition`. The current identities are kept when not supplied.
 
 ```yaml
 Type: PSObject[]
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
@@ -253,14 +277,14 @@ Accept wildcard characters: False
 ```
 
 ### -targets
-The targets the policy grants access to, from the `New-UAP*TargetDefinition` builder matching the target category.
+The targets the policy grants access to, from the `New-UAP*TargetDefinition` builder matching the target category. The current targets are kept when not supplied.
 
 ```yaml
 Type: PSObject
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)

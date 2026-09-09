@@ -12,8 +12,11 @@ All notable changes to this project will be documented in this file.
 - `Get-UAPPolicy`: get a single policy by id, or a filtered list. Filter criteria (`-policyTags`,
   `-identities`, `-targetCategory`, `-status`, `-locationType`) are assembled into the service's
   filter expression; `-filter` takes an expression directly. Results are paginated automatically.
-- `New-UAPPolicy`, `Set-UAPPolicy`, `Remove-UAPPolicy`: create, replace and delete access policies
-  for cloud consoles, virtual machines, databases, Kubernetes clusters and Entra ID groups.
+- `New-UAPPolicy`, `Remove-UAPPolicy`: create and delete access policies for cloud consoles, virtual
+  machines, databases, Kubernetes clusters and Entra ID groups.
+- `Set-UAPPolicy`: update an access policy. The service replaces the policy with the payload sent, so
+  the current policy is retrieved and used for whatever is not supplied - only `-policyId` is
+  mandatory. The read-only properties of a retrieved policy are dropped rather than echoed back.
 - `Test-UAPPolicy`: trigger validation of a cloud console policy.
 - Definition builders: `New-UAPPrincipalDefinition`, `New-UAPConditionDefinition`,
   `New-UAPCloudConsoleTargetDefinition`, `New-UAPVirtualMachineTargetDefinition`,

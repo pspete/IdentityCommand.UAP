@@ -138,14 +138,25 @@ Targets are wrapped in whatever shape the chosen category requires, so pass the 
 
 ### Changing and Removing a Policy
 
-`Set-UAPPolicy` **replaces** the policy with the payload sent - it is not a partial update, so supply the policy in full, including the parts which are not changing. Suspending a policy is done here too:
+The service replaces a policy with whatever is sent to it, so `Set-UAPPolicy` reads the current policy first and keeps everything you do not supply. Supply only what is changing:
 
 ```powershell
-Set-UAPPolicy -policyId $policyId -name 'AWS read access' -targetCategory 'Cloud Console' -locationType AWS `
-    -status Suspended -principals $Principals -conditions $Conditions -targets $Targets
+# Suspend a policy, leaving the rest of it alone
+Set-UAPPolicy -policyId $policyId -status Suspended
+
+# Rename it
+Set-UAPPolicy -policyId $policyId -name 'AWS read access'
+
+# Replace just its targets
+Set-UAPPolicy -policyId $policyId -targets $Targets
+
+# Suspend every active VM policy
+Get-UAPPolicy -status Active -targetCategory VM | Set-UAPPolicy -status Suspended
 
 Remove-UAPPolicy -policyId $policyId
 ```
+
+The read-only properties the service adds to a retrieved policy - who created it, resolved target display names, the status detail behind its status - are dropped rather than echoed back. Because omitted values fall back to the current policy, a value cannot be cleared by omitting it.
 
 ### Validating a Cloud Console Policy
 
