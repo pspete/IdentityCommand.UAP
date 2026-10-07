@@ -32,7 +32,7 @@
 
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules   = @(
-        @{ModuleName = 'IdentityCommand'; GUID = 'f6bb2bdf-0c53-443f-be07-3c25264a09b1'; ModuleVersion = '0.6.158' }
+        @{ModuleName = 'IdentityCommand'; GUID = 'f6bb2bdf-0c53-443f-be07-3c25264a09b1'; ModuleVersion = '0.7.159' }
     )
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
