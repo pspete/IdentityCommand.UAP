@@ -124,6 +124,7 @@ Describe 'Set-UAPPolicy' {
 
         It 'keeps the entitlement of the current policy when not supplied' {
             Should -Invoke -CommandName Invoke-IDRestMethod -ModuleName $Script:UAPModuleName -ParameterFilter {
+                if ($Method -ne 'PUT') { return $false }
                 $Entitlement = ($Body | ConvertFrom-Json).metadata.policyEntitlement
                 ($Method -eq 'PUT') -and ($Entitlement.targetCategory -eq 'Cloud Console') -and ($Entitlement.locationType -eq 'AWS')
             } -Times 1 -Exactly -Scope It
@@ -131,6 +132,7 @@ Describe 'Set-UAPPolicy' {
 
         It 'keeps both ends of the current timeframe when neither is supplied' {
             Should -Invoke -CommandName Invoke-IDRestMethod -ModuleName $Script:UAPModuleName -ParameterFilter {
+                if ($Method -ne 'PUT') { return $false }
                 $TimeFrame = ($Body | ConvertFrom-Json).metadata.timeFrame
                 ($Method -eq 'PUT') -and ($TimeFrame.fromTime -eq '2026-01-01T00:00:00') -and ($TimeFrame.toTime -eq '2026-12-31T00:00:00')
             } -Times 1 -Exactly -Scope It
@@ -138,6 +140,7 @@ Describe 'Set-UAPPolicy' {
 
         It 'keeps the principals, conditions and targets of the current policy when not supplied' {
             Should -Invoke -CommandName Invoke-IDRestMethod -ModuleName $Script:UAPModuleName -ParameterFilter {
+                if ($Method -ne 'PUT') { return $false }
                 $Policy = $Body | ConvertFrom-Json
                 ($Method -eq 'PUT') -and
                 ($Policy.principals.id -eq 'i1') -and
@@ -163,6 +166,7 @@ Describe 'Set-UAPPolicy' {
         It 'replaces only the supplied end of the timeframe' {
             $null = Set-UAPPolicy -policyId 'p1' -toTime ([datetime]'2027-06-30T00:00:00')
             Should -Invoke -CommandName Invoke-IDRestMethod -ModuleName $Script:UAPModuleName -ParameterFilter {
+                if ($Method -ne 'PUT') { return $false }
                 $TimeFrame = ($Body | ConvertFrom-Json).metadata.timeFrame
                 ($Method -eq 'PUT') -and ($TimeFrame.fromTime -eq '2026-01-01T00:00:00') -and ($TimeFrame.toTime -eq '2027-06-30T00:00:00')
             } -Times 1 -Exactly -Scope It
@@ -193,6 +197,7 @@ Describe 'Set-UAPPolicy' {
 
         It 'sends the status value without its read-only detail' {
             Should -Invoke -CommandName Invoke-IDRestMethod -ModuleName $Script:UAPModuleName -ParameterFilter {
+                if ($Method -ne 'PUT') { return $false }
                 $StatusNames = ($Body | ConvertFrom-Json).metadata.status.PSObject.Properties.Name
                 ($Method -eq 'PUT') -and ($StatusNames -contains 'status') -and ($StatusNames -notcontains 'statusCode')
             } -Times 1 -Exactly -Scope It
