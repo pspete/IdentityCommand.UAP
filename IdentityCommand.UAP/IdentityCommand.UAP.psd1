@@ -10,7 +10,7 @@
     RootModule        = 'IdentityCommand.UAP.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0'
+    ModuleVersion     = '0.1.0'
 
     # ID used to uniquely identify this module
     GUID              = '6b9f1269-a68e-4787-a758-6aa7db0d481b'

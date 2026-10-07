@@ -1,12 +1,27 @@
-# Change Log
+---
+title: "IdentityCommand.UAP Release 0.1"
+date: 2026-10-07 00:00:00
+version: 0.1.0
+tags:
+  - Release Notes
+  - Connect-UAPTenant
+  - Get-UAPPolicy
+  - New-UAPPolicy
+  - Remove-UAPPolicy
+  - Set-UAPPolicy
+  - Test-UAPPolicy
+  - New-UAPPrincipalDefinition
+  - New-UAPConditionDefinition
+  - New-UAPCloudConsoleTargetDefinition
+  - New-UAPVirtualMachineTargetDefinition
+  - New-UAPDatabaseTargetDefinition
+  - New-UAPClusterTargetDefinition
+  - New-UAPGroupTargetDefinition
+  - New-UAPVirtualMachineBehaviorDefinition
+  - Get-UAPModuleData
+---
 
-All notable changes to this project will be documented in this file.
-
-## Unreleased
-
-- N/A
-
-## [0.1.0] - 2026-10-07
+## [0.1.0]
 
 ### Added
 
@@ -28,4 +43,3 @@ All notable changes to this project will be documented in this file.
   `New-UAPGroupTargetDefinition` and `New-UAPVirtualMachineBehaviorDefinition`. Each target builder
   accepts a previous definition, so a policy's targets are built up in a chain.
 - `Get-UAPModuleData`: get the module version and session configuration data.
-
