@@ -149,4 +149,49 @@ Describe 'Get-UAPPolicy' {
         }
     }
 
+    Context 'Without a module session' {
+
+        BeforeEach {
+
+            InModuleScope -ModuleName $Script:UAPModuleName {
+                $ISPSSSession = [ordered]@{
+                    tenant_url = $null
+                    Subdomain  = $null
+                    StartTime  = $null
+                    WebSession = $null
+                }
+                New-Variable -Name ISPSSSession -Value $ISPSSSession -Scope Script -Force
+            }
+
+            Mock -CommandName Get-IDSession -ModuleName $Script:UAPModuleName -MockWith {
+                [ordered]@{
+                    tenant_url = 'https://sometenant.id.cyberark.cloud'
+                    Subdomain  = 'sometenant'
+                    StartTime  = Get-Date '2026-01-01T09:00:00'
+                    WebSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+                }
+            }
+
+            Mock -CommandName Resolve-ServiceUrl -ModuleName $Script:UAPModuleName -MockWith {
+                [pscustomobject]@{ ServiceUrl = "https://$Subdomain.$Service.cyberark.cloud" }
+            }
+
+        }
+
+        It 'resolves the service URL from the IdentityCommand session' {
+            $null = Get-UAPPolicy
+            Should -Invoke -CommandName Resolve-ServiceUrl -ModuleName $Script:UAPModuleName -ParameterFilter {
+                $Service -eq 'uap' -and $Subdomain -eq 'sometenant'
+            } -Times 1 -Exactly -Scope It
+        }
+
+        It 'sends request to the resolved service URL' {
+            $null = Get-UAPPolicy
+            Should -Invoke -CommandName Invoke-IDRestMethod -ModuleName $Script:UAPModuleName -ParameterFilter {
+                $URI -eq 'https://sometenant.uap.cyberark.cloud/api/policies'
+            } -Times 1 -Exactly -Scope It
+        }
+
+    }
+
 }

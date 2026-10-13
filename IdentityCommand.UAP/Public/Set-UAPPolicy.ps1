@@ -118,7 +118,7 @@ function Set-UAPPolicy {
 
     process {
 
-        $URI = "$($ISPSSSession.tenant_url)/api/policies/$policyId"
+        $URI = "$(Resolve-RequestUrl)/api/policies/$policyId"
 
         #The service replaces the policy with the payload sent, so the current policy provides
         #whatever the caller did not supply. Its read-only properties are dropped rather than echoed.

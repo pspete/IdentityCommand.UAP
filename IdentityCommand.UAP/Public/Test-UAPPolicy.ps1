@@ -15,7 +15,7 @@ function Test-UAPPolicy {
 
     process {
 
-        $URI = "$($ISPSSSession.tenant_url)/api/policies/$policyId/validate"
+        $URI = "$(Resolve-RequestUrl)/api/policies/$policyId/validate"
 
         if ($PSCmdlet.ShouldProcess($policyId, 'Validate Access Policy')) {
 

@@ -110,7 +110,7 @@ function New-UAPPolicy {
 
     process {
 
-        $URI = "$($ISPSSSession.tenant_url)/api/policies"
+        $URI = "$(Resolve-RequestUrl)/api/policies"
 
         $Metadata = [ordered]@{ name = $name }
 
