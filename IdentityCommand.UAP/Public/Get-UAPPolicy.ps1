@@ -109,14 +109,14 @@ function Get-UAPPolicy {
 
         if ($PSCmdlet.ParameterSetName -eq 'byId') {
 
-            $URI = "$($ISPSSSession.tenant_url)/api/policies/$policyId"
+            $URI = "$(Resolve-RequestUrl)/api/policies/$policyId"
 
             #Send Request
             Invoke-IDRestMethod -Uri $URI -Method GET
 
         } else {
 
-            $URI = "$($ISPSSSession.tenant_url)/api/policies"
+            $URI = "$(Resolve-RequestUrl)/api/policies"
 
             $boundParameters = $PSBoundParameters | Get-Parameter -ParametersToRemove $FilterField
 
