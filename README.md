@@ -1,3 +1,7 @@
+![Logo][Logo]
+
+[Logo]: /docs/media/images/IdentityCommand.UAP.png
+
 # IdentityCommand.UAP
 
 **IdentityCommand.UAP** is a PowerShell module that provides a set of easy-to-use commands, allowing you to interact with the **CyberArk Access Control Policies API** from within the PowerShell environment.
